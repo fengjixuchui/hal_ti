@@ -9,6 +9,8 @@
 #include <kernel/zephyr/dpl/dpl.h>
 #include <ti/drivers/dpl/SemaphoreP.h>
 
+#include "stubs.h"
+
 /*
  * Zephyr kernel object pools:
  *
@@ -77,7 +79,7 @@ SemaphoreP_Handle SemaphoreP_create(unsigned int count,
 
 	sem = dpl_sem_pool_alloc();
 	if (sem) {
-		k_sem_init(sem, 0, limit);
+		k_sem_init(sem, count, limit);
 	}
 
 	return (SemaphoreP_Handle)sem;
@@ -137,4 +139,41 @@ SemaphoreP_Status SemaphoreP_pend(SemaphoreP_Handle handle, uint32_t timeout)
 void SemaphoreP_post(SemaphoreP_Handle handle)
 {
 	k_sem_give((struct k_sem *)handle);
+}
+
+SemaphoreP_Handle SemaphoreP_construct(SemaphoreP_Struct *handle,
+                    unsigned int count, SemaphoreP_Params *params)
+{
+    unsigned int limit = UINT_MAX;
+    struct k_sem *sem;
+
+    if (params) {
+        limit = (params->mode == SemaphoreP_Mode_BINARY) ?
+            1 : UINT_MAX;
+    }
+
+    sem = (struct k_sem *)handle;
+    if (sem) {
+        k_sem_init(sem, count, limit);
+    }
+
+    return (SemaphoreP_Handle)sem;
+}
+
+SemaphoreP_Handle SemaphoreP_constructBinary(SemaphoreP_Struct *handle, unsigned int count) {
+    SemaphoreP_Params params;
+
+    SemaphoreP_Params_init(&params);
+    params.mode = SemaphoreP_Mode_BINARY;
+
+    return (SemaphoreP_construct(handle, count, &params));
+}
+
+void SemaphoreP_destruct(SemaphoreP_Struct *semP) {
+    struct k_sem *sem;
+
+    sem = (struct k_sem *)semP->data;
+    if (sem) {
+        k_sem_reset(sem);
+    }
 }

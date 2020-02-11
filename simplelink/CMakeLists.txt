@@ -54,6 +54,44 @@ if(CONFIG_HAS_CC3220SDK)
       PROPERTIES COMPILE_FLAGS -Wno-incompatible-pointer-types) # driver.c warns on incompatible-pointer-types
   endif()
 
+elseif(CONFIG_HAS_CC13X2_CC26X2_SDK)
+  zephyr_include_directories(
+    .
+    source
+    )
+
+  zephyr_library()
+  zephyr_library_compile_definitions(${COMPILER})
+  zephyr_library_sources(
+    source/ti/drivers/power/PowerCC26X2.c
+    source/ti/drivers/power/PowerCC26X2_calibrateRCOSC.c
+    source/ti/drivers/utils/List.c
+    source/ti/drivers/rf/RFCC26X2_multiMode.c
+
+    kernel/zephyr/dpl/config.c
+    kernel/zephyr/dpl/ClockP_zephyr.c
+    kernel/zephyr/dpl/HwiP_zephyr.c
+    kernel/zephyr/dpl/SwiP_zephyr.c
+    kernel/zephyr/dpl/SemaphoreP_zephyr.c
+    kernel/zephyr/dpl/QueueP_zephyr.c
+    )
+
+  if(CONFIG_SOC_CC1352R)
+    set_source_files_properties(source/ti/drivers/power/PowerCC26X2.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC13X2;${COMPILER}" )
+    set_source_files_properties(source/ti/drivers/power/PowerCC26X2_calibrateRCOSC.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC13X2;${COMPILER}" )
+    set_source_files_properties(source/ti/drivers/rf/RFCC26X2_multiMode.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC13X2;${COMPILER}" )
+  else()
+    set_source_files_properties(source/ti/drivers/power/PowerCC26X2.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC26X2;${COMPILER}" )
+    set_source_files_properties(source/ti/drivers/power/PowerCC26X2_calibrateRCOSC.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC26X2;${COMPILER}" )
+    set_source_files_properties(source/ti/drivers/rf/RFCC26X2_multiMode.c
+      PROPERTIES COMPILE_DEFINITIONS "DeviceFamily_CC26X2;${COMPILER}" )
+  endif()
+
 elseif(CONFIG_HAS_MSP432P4XXSDK)
   zephyr_include_directories(
     source
